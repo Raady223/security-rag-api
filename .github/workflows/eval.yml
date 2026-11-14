@@ -40,7 +40,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: postgresql+psycopg://rag:rag@localhost:5432/rag
-          MAX_DISTANCE: "0.6"
+          MAX_DISTANCE: "0.45"
 
       - uses: actions/upload-artifact@v7
         if: always()

@@ -99,7 +99,7 @@ Interactive API docs: http://localhost:8000/docs
 | `CHAT_MODEL` | `gemini-3.5-flash-lite` | Answer model |
 | `EMBEDDING_MODEL` | `gemini-embedding-2` | Embedding model |
 | `EMBEDDING_DIM` | `768` | Must match the `vector(...)` column |
-| `MAX_DISTANCE` | `0.6` | Relevance gate; tune with `docker compose logs api \| grep distances` |
+| `MAX_DISTANCE` | `0.45` | Relevance gate (calibrated, see Results); tune with `docker compose logs api \| grep distances` |
 | `TOP_K` | `5` | Chunks retrieved per question |
 
 ---
@@ -179,14 +179,22 @@ docker compose exec api python -m evals.run_eval --ingest
 
 ### Results
 
-<!-- Fill in from your own run; details are in evals/results.json -->
-
 | Metric | Score |
 |---|---|
-| Retrieval hit rate (top 5) | **XX%** (XX/23) |
-| Answer correctness | **XX%** (XX/28) |
+| Retrieval hit rate (top 5) | **100%** (23/23) |
+| Answer correctness | **100%** (28/28): 23 document, 2 tool, 3 refusals |
 
-Run on `gemini-3.5-flash-lite` + `gemini-embedding-2` (768 dims), `MAX_DISTANCE=X.XX`, on YYYY-MM-DD.
+Run on `gemini-3.5-flash-lite` + `gemini-embedding-2` (768 dims), `MAX_DISTANCE=0.45`, on 2026-11-14.
+
+**Threshold calibration.** On 16 separate questions (not from the eval set), the best-chunk
+cosine distance was 0.22–0.42 for on-topic questions and 0.43–0.54 for off-topic ones, so
+the gate was set to 0.45. The margin is narrow; the answer prompt's "not in context" rule
+and the `confident` flag are the second line of defence.
+
+**Reading these numbers honestly.** A perfect score on 28 questions that I wrote after
+reading the documents mostly says the set is too easy. Next steps: paraphrased and
+multi-document questions, questions written by someone else, and more documents so
+retrieval has to choose between closer competitors.
 
 ---
 

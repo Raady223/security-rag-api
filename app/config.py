@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     top_k: int = 5
     # If even the closest chunk is farther than this, we answer "not found"
     # without calling the LLM. Calibrated on our data; see the README.
-    max_distance: float = 0.6
+    max_distance: float = 0.45
 
 
 settings = Settings()

@@ -89,10 +89,18 @@ gate, error mapping, what was sent), not answer quality. Quality is the eval's
 job. 38 tests run in under a second with no API key.
 
 **13. How did you choose the relevance threshold?**
-I logged the cosine distances for in-scope and off-topic questions and set
-`MAX_DISTANCE` between the two groups, then checked with the eval: negatives
-measure whether it is too loose, `rag` questions whether it is too strict. It is
-config, not code, because it depends on the embedding model and the data.
+I measured the best-chunk cosine distance for 8 on-topic and 8 off-topic questions
+that were *not* in the eval set (tuning on the eval would make it an unfair test).
+On-topic was 0.22–0.42, off-topic 0.43–0.54, so I set `MAX_DISTANCE=0.45`. Then the
+eval checked it: negatives show whether it is too loose, `rag` questions whether it
+is too strict. The gap was narrow, so the prompt's "not in context" rule is a second
+safety net. It is config, not code, because it depends on the embedding model and data.
+
+**Follow-up you will likely get: "Your eval scored 100%. Is your system perfect?"**
+No. It means my eval set is too easy: 28 questions I wrote after reading 7 short
+documents, mostly answerable from one chunk. A perfect score tells me to make the
+test harder (paraphrased and multi-document questions, questions written by others,
+more and more similar documents), not that I am done.
 
 **14. What would you change for production?**
 Ingestion in a background queue with retries; Alembic migrations; structure-aware
@@ -120,6 +128,6 @@ needs its integrations or standard patterns.
 - Implemented a hand-written LLM tool-calling loop (read-only ATT&CK lookup) and
   schema-constrained JSON output validated with Pydantic, retry-on-failure and a
   relevance gate that refuses off-topic questions without calling the model.
-- Created a 28-question evaluation suite reaching **[XX]% top-5 retrieval hit rate** and
-  **[XX]% answer correctness**, run as a regression gate in GitHub Actions alongside 38
+- Created a 28-question evaluation suite reaching **100% top-5 retrieval hit rate** and
+  **100% answer correctness** (including correct refusals of off-topic questions), run as a regression gate in GitHub Actions alongside 38
   Pytest tests (mocked LLM, real pgvector), all packaged with Docker Compose.
