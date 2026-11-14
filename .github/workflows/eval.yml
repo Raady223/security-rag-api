@@ -1,0 +1,49 @@
+name: eval
+
+# Calls the real Gemini API, so it runs only when started by hand
+# (Actions tab -> eval -> Run workflow), to protect the free-tier quota.
+# Needs a repository secret named GEMINI_API_KEY.
+on:
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: rag
+          POSTGRES_PASSWORD: rag
+          POSTGRES_DB: rag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rag"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Exits 1 (fails the job) if retrieval hit rate or answer correctness < 80%.
+      - run: python -m evals.run_eval --ingest
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: postgresql+psycopg://rag:rag@localhost:5432/rag
+          MAX_DISTANCE: "0.6"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: eval-results
+          path: evals/results.json
