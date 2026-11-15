@@ -22,6 +22,18 @@ in total), so every step is visible.
 
 ---
 
+## Demo
+
+![Terminal demo: start, upload, cited answer, tool call, refusal, eval](docs/demo.gif)
+
+A 40-second real run against Gemini: start with one command, upload 7 documents,
+get a cited answer, watch the model call `get_technique` for T1003 (which no document
+covers), see an off-topic question refused without an LLM call, and the eval pass.
+Recorded with [asciinema](https://asciinema.org) from [`scripts/demo.sh`](scripts/demo.sh);
+replay it in your terminal with `asciinema play docs/demo.cast`.
+
+---
+
 ## Architecture
 
 ```mermaid
